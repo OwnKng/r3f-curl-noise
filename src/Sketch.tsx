@@ -17,24 +17,26 @@ const projectToSphere = (radius: number, x: number, y: number) => {
 }
 
 const createCurve = (start: Vector3) => {
-  const numPoints = 1000
-  const frequency = 3
-  const amplitude = 1
+  const numPoints = 600
+  const scale = 10
+  const amplitude = 0.001
 
   const points = []
   points.push(start)
   let currentPoint = start.clone()
 
   for (let i = 1; i < numPoints; i++) {
-    const vector = computeCurl(
-      currentPoint.x / frequency,
-      currentPoint.y / frequency,
-      currentPoint.z / frequency
+    const velocity = computeCurl(
+      currentPoint.x / scale,
+      currentPoint.y / scale,
+      currentPoint.z / scale
     )
 
-    currentPoint.addScaledVector(vector, amplitude)
+    currentPoint.addScaledVector(velocity, amplitude)
     points.push(currentPoint.clone())
   }
+
+  console.log(points)
 
   return points
 }
@@ -47,8 +49,10 @@ const Sketch = () => {
   const curves = useMemo(() => {
     const curves = []
 
-    for (let i = 0; i < 10; i++) {
-      const points = createCurve(new THREE.Vector3(i / 10, i / 10, i / 10))
+    for (let i = 0; i < 40; i++) {
+      const points = createCurve(
+        new THREE.Vector3(Math.random(), Math.random(), Math.random())
+      )
 
       const spherePoints = []
 
@@ -62,7 +66,7 @@ const Sketch = () => {
 
       curves.push(
         new THREE.Mesh(
-          new THREE.TubeBufferGeometry(path, 500, 0.001, 8, false),
+          new THREE.TubeBufferGeometry(path, 600, 0.01, 8, false),
           new THREE.MeshBasicMaterial()
         )
       )
@@ -74,7 +78,7 @@ const Sketch = () => {
   return (
     <group>
       {curves.map((curve, i) => (
-        <primitive key={i} object={curve} />
+        <primitive scale={10} key={i} object={curve} />
       ))}
     </group>
   )
