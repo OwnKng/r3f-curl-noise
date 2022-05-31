@@ -1,7 +1,7 @@
 import { computeCurl } from "./util/curl"
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
-import { Vector3 } from "three"
+import { Vector2 } from "three"
 
 const radians = (degrees: number) => degrees * (Math.PI / 180)
 
@@ -16,9 +16,9 @@ const projectToSphere = (radius: number, x: number, y: number) => {
   )
 }
 
-const createCurve = (start: Vector3) => {
-  const numPoints = 600
-  const scale = 10
+const createCurve = (start: Vector2) => {
+  const numPoints = 500
+  const step = 3
   const amplitude = 0.001
 
   const points = []
@@ -26,22 +26,16 @@ const createCurve = (start: Vector3) => {
   let currentPoint = start.clone()
 
   for (let i = 1; i < numPoints; i++) {
-    const velocity = computeCurl(
-      currentPoint.x / scale,
-      currentPoint.y / scale,
-      currentPoint.z / scale
-    )
+    const [x, y] = computeCurl(currentPoint.x / step, currentPoint.y / step)
 
-    currentPoint.addScaledVector(velocity, amplitude)
+    currentPoint.addScaledVector(new THREE.Vector2(x, y), amplitude)
     points.push(currentPoint.clone())
   }
-
-  console.log(points)
 
   return points
 }
 
-const radius = 1
+const radius = 10
 
 const Sketch = () => {
   const ref = useRef()
@@ -49,9 +43,9 @@ const Sketch = () => {
   const curves = useMemo(() => {
     const curves = []
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 500; i++) {
       const points = createCurve(
-        new THREE.Vector3(Math.random(), Math.random(), Math.random())
+        new THREE.Vector2(Math.random() * 10, Math.random() * 10)
       )
 
       const spherePoints = []
@@ -59,7 +53,8 @@ const Sketch = () => {
       for (let i = 0; i < points.length; i++) {
         const { x, y } = points[i]
 
-        spherePoints[i] = projectToSphere(radius, x, y)
+        //spherePoints[i] = projectToSphere(radius, x, y)
+        spherePoints[i] = new THREE.Vector3(x, y, 0)
       }
 
       const path = new THREE.CatmullRomCurve3(spherePoints)
@@ -76,9 +71,9 @@ const Sketch = () => {
   }, [])
 
   return (
-    <group>
+    <group scale={[2, 2, 10]}>
       {curves.map((curve, i) => (
-        <primitive scale={10} key={i} object={curve} />
+        <primitive key={i} object={curve} />
       ))}
     </group>
   )
