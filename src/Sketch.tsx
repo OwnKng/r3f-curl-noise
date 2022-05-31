@@ -1,7 +1,7 @@
 import { computeCurl } from "./util/curl"
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
-import { Vector2 } from "three"
+import { Vector3 } from "three"
 
 const radians = (degrees: number) => degrees * (Math.PI / 180)
 
@@ -16,7 +16,7 @@ const projectToSphere = (radius: number, x: number, y: number) => {
   )
 }
 
-const createCurve = (start: Vector2) => {
+const createCurve = (start: Vector3) => {
   const numPoints = 500
   const step = 3
   const amplitude = 0.001
@@ -26,9 +26,13 @@ const createCurve = (start: Vector2) => {
   let currentPoint = start.clone()
 
   for (let i = 1; i < numPoints; i++) {
-    const [x, y] = computeCurl(currentPoint.x / step, currentPoint.y / step)
+    const point = computeCurl(
+      currentPoint.x / step,
+      currentPoint.y / step,
+      currentPoint.z / step
+    )
 
-    currentPoint.addScaledVector(new THREE.Vector2(x, y), amplitude)
+    currentPoint.addScaledVector(point, amplitude)
     points.push(currentPoint.clone())
   }
 
@@ -43,18 +47,21 @@ const Sketch = () => {
   const curves = useMemo(() => {
     const curves = []
 
+    const origin = new THREE.Vector3()
+
     for (let i = 0; i < 500; i++) {
-      const points = createCurve(
-        new THREE.Vector2(Math.random() * 10, Math.random() * 10)
-      )
+      origin.set(0.5 - Math.random(), 0.5 - Math.random(), 0.5 - Math.random())
+      origin.normalize().multiplyScalar(30 * 0.2)
+
+      const points = createCurve(origin)
 
       const spherePoints = []
 
       for (let i = 0; i < points.length; i++) {
-        const { x, y } = points[i]
+        const { x, y, z } = points[i]
 
         //spherePoints[i] = projectToSphere(radius, x, y)
-        spherePoints[i] = new THREE.Vector3(x, y, 0)
+        spherePoints[i] = new THREE.Vector3(x, y, z).normalize()
       }
 
       const path = new THREE.CatmullRomCurve3(spherePoints)
@@ -71,7 +78,7 @@ const Sketch = () => {
   }, [])
 
   return (
-    <group scale={[2, 2, 10]}>
+    <group>
       {curves.map((curve, i) => (
         <primitive key={i} object={curve} />
       ))}
