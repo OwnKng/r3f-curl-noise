@@ -5,7 +5,7 @@ import Sketch from "./Sketch"
 
 const App = () => (
   <div className='App'>
-    <Canvas>
+    <Canvas camera={{ position: [0, 0, 2] }}>
       <OrbitControls />
       <Sketch />
     </Canvas>

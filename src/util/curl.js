@@ -1,4 +1,4 @@
-// https://al-ro.github.io/projects/embers/
+//_ Code from https://al-ro.github.io/projects/embers/
 import SimplexNoise from "simplex-noise"
 import * as THREE from "three"
 

@@ -1,25 +1,15 @@
 import { computeCurl } from "./util/curl"
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
-import { Vector3 } from "three"
-
-const radians = (degrees: number) => degrees * (Math.PI / 180)
-
-const projectToSphere = (radius: number, x: number, y: number) => {
-  const theta = radians(y) + Math.PI / 2
-  const phi = radians(x) + Math.PI
-
-  return new THREE.Vector3(
-    radius * Math.sin(theta) * Math.cos(phi),
-    radius * Math.sin(theta) * Math.sin(phi),
-    radius * Math.cos(theta)
-  )
-}
+import { Group, Mesh, Vector3 } from "three"
+import { vertex } from "./shaders/vertex"
+import { fragment } from "./shaders/fragment"
+import { useFrame } from "@react-three/fiber"
 
 const createCurve = (start: Vector3) => {
   const numPoints = 500
-  const step = 3
-  const amplitude = 0.001
+  const frequency = 0.1
+  const step = 0.0025
 
   const points = []
   points.push(start)
@@ -27,49 +17,47 @@ const createCurve = (start: Vector3) => {
 
   for (let i = 1; i < numPoints; i++) {
     const point = computeCurl(
-      currentPoint.x / step,
-      currentPoint.y / step,
-      currentPoint.z / step
+      currentPoint.x * frequency,
+      currentPoint.y * frequency,
+      currentPoint.z * frequency
     )
 
-    currentPoint.addScaledVector(point, amplitude)
+    currentPoint.addScaledVector(point, step)
+
     points.push(currentPoint.clone())
   }
 
-  return points
+  return points.map((point) => point.normalize())
 }
 
-const radius = 10
-
 const Sketch = () => {
-  const ref = useRef()
+  const ref = useRef<Group>(null!)
 
   const curves = useMemo(() => {
     const curves = []
 
     const origin = new THREE.Vector3()
 
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < 2000; i++) {
       origin.set(0.5 - Math.random(), 0.5 - Math.random(), 0.5 - Math.random())
-      origin.normalize().multiplyScalar(30 * 0.2)
+      origin.normalize().multiplyScalar(10)
 
       const points = createCurve(origin)
-
-      const spherePoints = []
-
-      for (let i = 0; i < points.length; i++) {
-        const { x, y, z } = points[i]
-
-        //spherePoints[i] = projectToSphere(radius, x, y)
-        spherePoints[i] = new THREE.Vector3(x, y, z).normalize()
-      }
-
-      const path = new THREE.CatmullRomCurve3(spherePoints)
+      const path = new THREE.CatmullRomCurve3(points)
 
       curves.push(
         new THREE.Mesh(
-          new THREE.TubeBufferGeometry(path, 600, 0.01, 8, false),
-          new THREE.MeshBasicMaterial()
+          new THREE.TubeBufferGeometry(path, 100, 0.0015, 8, false),
+          new THREE.ShaderMaterial({
+            vertexShader: vertex,
+            fragmentShader: fragment,
+            transparent: true,
+            uniforms: {
+              uTime: { value: 0 },
+              uOffset: { value: Math.random() },
+              uSpeed: { value: Math.random() },
+            },
+          })
         )
       )
     }
@@ -77,8 +65,16 @@ const Sketch = () => {
     return curves
   }, [])
 
+  useFrame(({ clock }) => {
+    const { children } = ref.current
+    for (let i = 0; i < children.length; i++) {
+      //@ts-ignore
+      children[i].material.uniforms.uTime.value = clock.getElapsedTime()
+    }
+  })
+
   return (
-    <group>
+    <group ref={ref}>
       {curves.map((curve, i) => (
         <primitive key={i} object={curve} />
       ))}
