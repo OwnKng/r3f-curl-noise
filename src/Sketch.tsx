@@ -1,7 +1,7 @@
 import { computeCurl } from "./util/curl"
 import * as THREE from "three"
 import { useMemo, useRef } from "react"
-import { Group, Mesh, Vector3 } from "three"
+import { Group, Vector3 } from "three"
 import { vertex } from "./shaders/vertex"
 import { fragment } from "./shaders/fragment"
 import { useFrame } from "@react-three/fiber"
