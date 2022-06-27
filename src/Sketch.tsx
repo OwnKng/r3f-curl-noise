@@ -6,6 +6,12 @@ import { vertex } from "./shaders/vertex"
 import { fragment } from "./shaders/fragment"
 import { useFrame } from "@react-three/fiber"
 
+const colors = [
+  new THREE.Vector3(152 / 255, 112 / 255, 166 / 255),
+  new THREE.Vector3(230 / 255, 225 / 255, 216 / 255),
+  new THREE.Vector3(171 / 255, 192 / 255, 231 / 255),
+]
+
 const createCurve = (start: Vector3) => {
   const numPoints = 500
   const frequency = 0.1
@@ -38,7 +44,7 @@ const Sketch = () => {
 
     const origin = new THREE.Vector3()
 
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < 1500; i++) {
       origin.set(0.5 - Math.random(), 0.5 - Math.random(), 0.5 - Math.random())
       origin.normalize().multiplyScalar(10)
 
@@ -56,6 +62,7 @@ const Sketch = () => {
               uTime: { value: 0 },
               uOffset: { value: Math.random() },
               uSpeed: { value: Math.random() },
+              uColor: { value: colors[Math.floor(Math.random() * 3)] },
             },
           })
         )
