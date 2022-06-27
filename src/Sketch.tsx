@@ -7,9 +7,9 @@ import { fragment } from "./shaders/fragment"
 import { useFrame } from "@react-three/fiber"
 
 const colors = [
-  new THREE.Vector3(152 / 255, 112 / 255, 166 / 255),
-  new THREE.Vector3(230 / 255, 225 / 255, 216 / 255),
-  new THREE.Vector3(171 / 255, 192 / 255, 231 / 255),
+  new THREE.Color(0x5adbff),
+  new THREE.Color(0x006daa),
+  new THREE.Color(0xf15152),
 ]
 
 const createCurve = (start: Vector3) => {
@@ -44,7 +44,7 @@ const Sketch = () => {
 
     const origin = new THREE.Vector3()
 
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 2000; i++) {
       origin.set(0.5 - Math.random(), 0.5 - Math.random(), 0.5 - Math.random())
       origin.normalize().multiplyScalar(10)
 
